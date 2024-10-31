@@ -45,13 +45,13 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
-            className: 'bs-full overflow-y-auto overflow-x-hidden',
-            onScroll: container => scrollMenu(container, false)
-          }
+          className: 'bs-full overflow-y-auto overflow-x-hidden',
+          onScroll: container => scrollMenu(container, false)
+        }
         : {
-            options: { wheelPropagation: false, suppressScrollX: true },
-            onScrollY: container => scrollMenu(container, true)
-          })}
+          options: { wheelPropagation: false, suppressScrollX: true },
+          onScrollY: container => scrollMenu(container, true)
+        })}
     >
       {/* Incase you also want to scroll NavHeader to scroll with Vertical Menu, remove NavHeader from above and paste it below this comment */}
       {/* Vertical Menu */}
@@ -69,6 +69,13 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem
             href={`${process.env.NEXT_PUBLIC_PRO_URL}/dashboards/crm`}
             suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
+            target='_blank'
+          >
+            CRM
+          </MenuItem>
+          <MenuItem
+            href={`/dashboards/crm`}
+
             target='_blank'
           >
             CRM
@@ -96,7 +103,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             Logistics
           </MenuItem>
         </SubMenu>
-        <SubMenu
+        {/* <SubMenu
           label='Front Pages'
           icon={<i className='ri-file-copy-line' />}
           suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
@@ -116,9 +123,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href={`${process.env.NEXT_PUBLIC_PRO_URL}/front-pages/help-center`} target='_blank'>
             Help Center
           </MenuItem>
-        </SubMenu>
+        </SubMenu> */}
         <MenuSection label='Apps & Pages'>
-          <MenuItem
+          {/* <MenuItem
             href={`${process.env.NEXT_PUBLIC_PRO_URL}/apps/email`}
             icon={<i className='ri-mail-open-line' />}
             suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
@@ -152,7 +159,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           </MenuItem>
           <MenuItem href='/account-settings' icon={<i className='ri-user-settings-line' />}>
             Account Settings
-          </MenuItem>
+          </MenuItem> */}
           <SubMenu label='Auth Pages' icon={<i className='ri-shield-keyhole-line' />}>
             <MenuItem href='/login' target='_blank'>
               Login
@@ -180,7 +187,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/form-layouts' icon={<i className='ri-layout-4-line' />}>
             Form Layouts
           </MenuItem>
-          <MenuItem
+          {/* <MenuItem
             href={`${process.env.NEXT_PUBLIC_PRO_URL}/forms/form-validation`}
             icon={<i className='ri-checkbox-multiple-line' />}
             suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
@@ -203,7 +210,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             target='_blank'
           >
             React Table
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             href={`${process.env.NEXT_PUBLIC_DOCS_URL}/docs/user-interface/form-elements`}
             icon={<i className='ri-radio-button-line' />}
@@ -222,7 +229,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           </MenuItem>
         </MenuSection>
         <MenuSection label='Misc'>
-          <MenuItem
+          {/* <MenuItem
             href={`${process.env.NEXT_PUBLIC_DOCS_URL}/docs/user-interface/foundation`}
             icon={<i className='ri-pantone-line' />}
             suffix={<i className='ri-external-link-line text-xl' />}
@@ -261,7 +268,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             target='_blank'
           >
             Documentation
-          </MenuItem>
+          </MenuItem> */}
           <SubMenu label='Others' icon={<i className='ri-more-line' />}>
             <MenuItem suffix={<Chip label='New' size='small' color='info' />}>Item With Badge</MenuItem>
             <MenuItem
