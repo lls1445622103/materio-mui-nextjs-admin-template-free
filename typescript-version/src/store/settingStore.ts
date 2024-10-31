@@ -21,7 +21,7 @@ const useStore = create<StoreState>()(
       },
       // 判断是否已更改
       isSettingsChanged: () => {
-        return JSON.stringify(get().settings.mode) !== JSON.stringify(get())
+        return JSON.stringify(get().settings.mode) !== JSON.stringify(themeConfig.mode)
       },
 
       updateSettings(settings: Partial<Settings>) {

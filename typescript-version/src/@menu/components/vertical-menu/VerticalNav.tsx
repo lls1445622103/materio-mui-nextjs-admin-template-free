@@ -17,6 +17,7 @@ import type { VerticalNavState } from '../../contexts/verticalNavContext'
 // Hook Imports
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useVerticalNav from '../../hooks/useVerticalNav'
+import verticalNavStore from '@/store/verticalNavStore'
 
 // Util Imports
 import { verticalNavClasses } from '../../utils/menuClasses'
@@ -57,15 +58,24 @@ const VerticalNav = (props: VerticalNavProps) => {
 
   // Vars
   const mergedBreakpoints = { ...defaultBreakpoints, ...breakpoints }
-
+  const { toggleVerticalNav } = verticalNavStore()
   // Hooks
   const {
     updateVerticalNavState,
-    width: widthContext,
-    isBreakpointReached: isBreakpointReachedContext,
-    isToggled: isToggledContext,
-    transitionDuration: transitionDurationContext
-  } = useVerticalNav()
+    verticalNavState: {
+      width: widthContext,
+      isBreakpointReached: isBreakpointReachedContext,
+      isToggled: isToggledContext,
+      transitionDuration: transitionDurationContext
+    }
+  } = verticalNavStore()
+  // const {
+  //   updateVerticalNavState,
+  //   width: widthContext,
+  //   isBreakpointReached: isBreakpointReachedContext,
+  //   isToggled: isToggledContext,
+  //   transitionDuration: transitionDurationContext
+  // } = useVerticalNav()
 
   // Find the breakpoint from which screen size responsive behavior should enable and if its reached or not
   const breakpointReached = useMediaQuery(customBreakpoint ?? (breakpoint ? mergedBreakpoints[breakpoint] : breakpoint))

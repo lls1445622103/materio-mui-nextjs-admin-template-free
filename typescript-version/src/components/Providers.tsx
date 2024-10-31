@@ -25,12 +25,12 @@ const Providers = (props: Props) => {
   const settingsCookie = getSettingsFromCookie()
 
   return (
-    <VerticalNavProvider>
-      <ThemeProvider direction={direction}>
-        {children}
-        <UpgradeToProButton />
-      </ThemeProvider>
-    </VerticalNavProvider>
+    // <VerticalNavProvider>
+    <ThemeProvider direction={direction}>
+      {children}
+      <UpgradeToProButton />
+    </ThemeProvider>
+    // </VerticalNavProvider>
   )
 }
 
