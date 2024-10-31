@@ -26,12 +26,12 @@ const Providers = (props: Props) => {
 
   return (
     <VerticalNavProvider>
-      <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
-        <ThemeProvider direction={direction}>
-          {children}
-          <UpgradeToProButton />
-        </ThemeProvider>
-      </SettingsProvider>
+      {/* <SettingsProvider settingsCookie={settingsCookie} mode={mode}> */}
+      <ThemeProvider direction={direction}>
+        {children}
+        <UpgradeToProButton />
+      </ThemeProvider>
+      {/* </SettingsProvider> */}
     </VerticalNavProvider>
   )
 }

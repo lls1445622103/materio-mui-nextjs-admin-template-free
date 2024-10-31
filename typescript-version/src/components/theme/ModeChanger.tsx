@@ -4,13 +4,11 @@ import { useEffect } from 'react'
 // MUI Imports
 import { useColorScheme } from '@mui/material/styles'
 
-// Hook Imports
-import { useSettings } from '@core/hooks/useSettings'
-
+import settingStore from '@/store/settingStore'
 const ModeChanger = () => {
   // Hooks
   const { setMode } = useColorScheme()
-  const { settings } = useSettings()
+  const { settings } = settingStore()
 
   useEffect(() => {
     if (settings.mode) {

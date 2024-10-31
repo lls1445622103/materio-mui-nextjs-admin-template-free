@@ -7,9 +7,7 @@ import { useRef, useState } from 'react'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 
-// Hook Imports
-import { useSettings } from '@core/hooks/useSettings'
-
+import settingStore from '@/store/settingStore'
 const ModeDropdown = () => {
   // States
   const [tooltipOpen, setTooltipOpen] = useState(false)
@@ -18,7 +16,7 @@ const ModeDropdown = () => {
   const anchorRef = useRef<HTMLButtonElement>(null)
 
   // Hooks
-  const { settings, updateSettings } = useSettings()
+  const { settings, updateSettings } = settingStore()
 
   const handleToggle = () => {
     if (settings.mode === 'dark') {

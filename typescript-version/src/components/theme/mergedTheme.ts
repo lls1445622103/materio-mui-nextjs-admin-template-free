@@ -9,9 +9,8 @@
 // MUI Imports
 import { deepmerge } from '@mui/utils'
 import type { Theme } from '@mui/material/styles'
+import type { Settings } from '@/store/settingStore'
 
-// Type Imports
-import type { Settings } from '@core/contexts/settingsContext'
 import type { SystemMode } from '@core/types'
 
 // Core Theme Imports
