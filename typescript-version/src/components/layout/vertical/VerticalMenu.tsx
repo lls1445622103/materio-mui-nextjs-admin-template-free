@@ -155,7 +155,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/form-layouts' icon={<i className='ri-layout-4-line' />}>
             Form Layouts
           </MenuItem>
-          {/* <MenuItem
+          <MenuItem
             href={`${process.env.NEXT_PUBLIC_PRO_URL}/forms/form-validation`}
             icon={<i className='ri-checkbox-multiple-line' />}
             suffix={<Chip label='Pro' size='small' color='primary' variant='tonal' />}
@@ -178,7 +178,7 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             target='_blank'
           >
             React Table
-          </MenuItem> */}
+          </MenuItem>
           <MenuItem
             href={`${process.env.NEXT_PUBLIC_DOCS_URL}/docs/user-interface/form-elements`}
             icon={<i className='ri-radio-button-line' />}

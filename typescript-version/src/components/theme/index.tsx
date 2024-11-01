@@ -1,8 +1,8 @@
 'use client'
 
 // React Imports
-import { useMemo } from 'react'
-
+import { useMemo, useState } from 'react'
+import { Drawer, Card, CardHeader, CardContent } from '@mui/material'
 // MUI Imports
 import { deepmerge } from '@mui/utils'
 import {
@@ -15,7 +15,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 import CssBaseline from '@mui/material/CssBaseline'
 import type { } from '@mui/material/themeCssVarsAugmentation' //! Do not remove this import otherwise you will get type errors while making a production build
 import type { } from '@mui/lab/themeAugmentation' //! Do not remove this import otherwise you will get type errors while making a production build
-
+import './theme.module.scss'
 // Type Imports
 import type { ChildrenType, Direction } from '@core/types'
 
@@ -74,6 +74,7 @@ const ThemeProvider = (props: Props) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.mode])
+  const [open, setOpen] = useState(true);
 
   return (
     <AppRouterCacheProvider options={{ prepend: true }}>
@@ -86,6 +87,10 @@ const ThemeProvider = (props: Props) => {
           <ModeChanger />
           <CssBaseline />
           {children}
+          <Drawer classes={{ root: 'themeDrawer' }} anchor='right' open={open} onClose={() => setOpen(false)}>
+
+            2222
+          </Drawer>
         </>
       </CssVarsProvider>
     </AppRouterCacheProvider>
