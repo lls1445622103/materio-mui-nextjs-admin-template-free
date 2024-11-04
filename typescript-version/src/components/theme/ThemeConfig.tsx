@@ -1,32 +1,34 @@
-' use client '
+
 import React from 'react'
-import { Drawer, Typography, Chip, Divider, Grid } from '@mui/material'
+import { Drawer, Typography, Chip, Divider, Grid, Badge } from '@mui/material'
 import style from './theme.module.scss'
 import CachedIcon from '@mui/icons-material/Cached';
 import CloseIcon from '@mui/icons-material/Close';
 import * as  colors from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
+import settingStore from '@/store/settingStore'
 type Props = {
   open: boolean
   setOpen: (open: boolean) => void
-  setPrimaryColor: (color: string) => void
 }
 // type Colors = typeof colors
+type K = keyof typeof colors
 type ColorEntry = {
-  name: keyof typeof colors;
-  color: typeof colors[keyof typeof colors];
+  name: K
+  color: typeof colors[K];
 };
-export default function ThemeConfig({ open, setOpen, setPrimaryColor }: Props) {
+export default function ThemeConfig({ open, setOpen }: Props) {
   const theme = useTheme();
-  console.log('Primary Color Name:', theme); // 输出: blue
-  console.log('Primary Color Name:222', colors); // 输出: blue
-
+  const { updateSettings, isSettingsChanged, resetSettings } = settingStore()
+  console.log(isSettingsChanged())
   let colorsList: ColorEntry[] = []
   for (let key in colors) {
-    colorsList.push({
-      name: key as keyof typeof colors,
-      color: colors[key as keyof typeof colors]
-    })
+    if (key !== 'common') {
+      colorsList.push({
+        name: (key as K),
+        color: colors[(key as K)]
+      })
+    }
   }
   return (
     <Drawer anchor='right' open={open} onClose={() => setOpen(false)}>
@@ -40,8 +42,15 @@ export default function ThemeConfig({ open, setOpen, setPrimaryColor }: Props) {
               Customize & Preview in Real Time
             </Typography>
           </div>
-          <div>
-            <CachedIcon className='cursor-pointer' />
+          <div className='h-[44px] flex items-center'>
+            <Badge invisible={!isSettingsChanged()} color="error" variant="dot" className={`mr-2`}>
+              <CachedIcon className='cursor-pointer' onClick={() => {
+                if (isSettingsChanged()) {
+                  resetSettings()
+                }
+              }} />
+            </Badge>
+
             <CloseIcon className='cursor-pointer' onClick={() => setOpen(false)} />
           </div>
         </div>
@@ -59,7 +68,9 @@ export default function ThemeConfig({ open, setOpen, setPrimaryColor }: Props) {
                 {
                   colorsList.map((color: ColorEntry) => (
                     <div
-                      onClick={() => setPrimaryColor((color as any).color[500])}
+                      onClick={() => updateSettings({
+                        primaryColor: (color as any).color[500]
+                      })}
                       key={color.name}
                       className={`${(color as any).color[500] === theme.palette.primary.main ? style.colorItemActive : ''} ${style.colorItem}`
                       }>

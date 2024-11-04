@@ -6,22 +6,32 @@ import type { Mode } from '@core/types'
 import Cookies from 'js-cookie'
 export type Settings = {
   mode?: Mode
+  primaryColor?: string
 }
 interface StoreState {
   settings: Settings
+
   isSettingsChanged: () => boolean
   updateSettings: (settings: Partial<Settings>) => void
   resetSettings: () => void
 }
+const { mode, primaryColor } = themeConfig
 const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       settings: {
-        mode: themeConfig.mode
+        mode: mode,
+        primaryColor: primaryColor
       },
       // 判断是否已更改
       isSettingsChanged: () => {
-        return JSON.stringify(get().settings.mode) !== JSON.stringify(themeConfig.mode)
+        return (
+          JSON.stringify(get().settings) !==
+          JSON.stringify({
+            mode,
+            primaryColor
+          })
+        )
       },
 
       updateSettings(settings: Partial<Settings>) {
@@ -38,7 +48,8 @@ const useStore = create<StoreState>()(
         set(
           produce(state => {
             state.settings = {
-              mode: themeConfig.mode
+              mode: mode,
+              primaryColor: primaryColor
             }
           })
         )

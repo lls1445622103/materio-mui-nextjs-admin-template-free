@@ -18,15 +18,11 @@ import type { } from '@mui/lab/themeAugmentation' //! Do not remove this import 
 import './theme.module.scss'
 // Type Imports
 import type { ChildrenType, Direction } from '@core/types'
-
 // Component Imports
 import ModeChanger from './ModeChanger'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
-import primaryColorConfig from '@configs/primaryColorConfig'
-
-
 
 import settingStore from '@/store/settingStore'
 // Core Theme Imports
@@ -39,7 +35,6 @@ type Props = ChildrenType & {
 const ThemeProvider = (props: Props) => {
   // Props
   const { children, direction } = props
-  const [primaryColor, setPrimaryColor] = useState(primaryColorConfig[0].main)
   // Hooks
   const { settings } = settingStore()
 
@@ -50,18 +45,18 @@ const ThemeProvider = (props: Props) => {
         light: {
           palette: {
             primary: {
-              main: primaryColor,
-              light: lighten(primaryColor as string, 0.2),
-              dark: darken(primaryColor as string, 0.1)
+              main: settings.primaryColor,
+              light: lighten(settings.primaryColor as string, 0.2),
+              dark: darken(settings.primaryColor as string, 0.1)
             }
           }
         },
         dark: {
           palette: {
             primary: {
-              main: primaryColor,
-              light: lighten(primaryColor as string, 0.2),
-              dark: darken(primaryColor as string, 0.1)
+              main: settings.primaryColor,
+              light: lighten(settings.primaryColor as string, 0.2),
+              dark: darken(settings.primaryColor as string, 0.1)
             }
           }
         }
@@ -89,7 +84,7 @@ const ThemeProvider = (props: Props) => {
     return extendTheme(coreTheme)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.mode, primaryColor])
+  }, [settings.mode, settings.primaryColor])
   const [open, setOpen] = useState(true);
 
   return (
@@ -103,7 +98,7 @@ const ThemeProvider = (props: Props) => {
           <ModeChanger />
           <CssBaseline />
           {children}
-          <ThemeConfigDiv open={open} setOpen={setOpen} setPrimaryColor={setPrimaryColor} />
+          <ThemeConfigDiv open={open} setOpen={setOpen} />
         </>
       </CssVarsProvider>
     </AppRouterCacheProvider>
