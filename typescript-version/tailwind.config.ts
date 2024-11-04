@@ -8,7 +8,11 @@ const config: Config = {
   important: '#__next',
   plugins: [require('tailwindcss-logical'), require('./src/@core/tailwind/plugin')],
   theme: {
-    extend: {}
+    extend: {
+      borderColor: {
+        custom: 'var(--mui-palette-primary-main)'
+      }
+    }
   }
 }
 

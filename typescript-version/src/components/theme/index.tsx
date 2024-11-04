@@ -2,7 +2,7 @@
 
 // React Imports
 import { useMemo, useState } from 'react'
-import { Drawer, Card, CardHeader, CardContent } from '@mui/material'
+import ThemeConfigDiv from './ThemeConfig'
 // MUI Imports
 import { deepmerge } from '@mui/utils'
 import {
@@ -39,7 +39,7 @@ type Props = ChildrenType & {
 const ThemeProvider = (props: Props) => {
   // Props
   const { children, direction } = props
-
+  const [primaryColor, setPrimaryColor] = useState(primaryColorConfig[0].main)
   // Hooks
   const { settings } = settingStore()
 
@@ -50,20 +50,36 @@ const ThemeProvider = (props: Props) => {
         light: {
           palette: {
             primary: {
-              main: primaryColorConfig[0].main,
-              light: lighten(primaryColorConfig[0].main as string, 0.2),
-              dark: darken(primaryColorConfig[0].main as string, 0.1)
+              main: primaryColor,
+              light: lighten(primaryColor as string, 0.2),
+              dark: darken(primaryColor as string, 0.1)
             }
           }
         },
         dark: {
           palette: {
             primary: {
-              main: primaryColorConfig[0].main,
-              light: lighten(primaryColorConfig[0].main as string, 0.2),
-              dark: darken(primaryColorConfig[0].main as string, 0.1)
+              main: primaryColor,
+              light: lighten(primaryColor as string, 0.2),
+              dark: darken(primaryColor as string, 0.1)
             }
           }
+        }
+      },
+      components: {
+        MuiChip: {
+          variants: [
+            {
+              props: { variant: 'text', },
+              style: {
+                // border: `4px dashed ${red[500]}`,
+                backgroundColor: 'var(--mui-palette-primary-lightOpacity)',
+                color: 'var(--mui-palette-primary-main)',
+                borderRadius: '4px'
+              }
+            }
+          ]
+
         }
       }
     }
@@ -73,7 +89,7 @@ const ThemeProvider = (props: Props) => {
     return extendTheme(coreTheme)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.mode])
+  }, [settings.mode, primaryColor])
   const [open, setOpen] = useState(true);
 
   return (
@@ -87,10 +103,7 @@ const ThemeProvider = (props: Props) => {
           <ModeChanger />
           <CssBaseline />
           {children}
-          <Drawer classes={{ root: 'themeDrawer' }} anchor='right' open={open} onClose={() => setOpen(false)}>
-
-            2222
-          </Drawer>
+          <ThemeConfigDiv open={open} setOpen={setOpen} setPrimaryColor={setPrimaryColor} />
         </>
       </CssVarsProvider>
     </AppRouterCacheProvider>
