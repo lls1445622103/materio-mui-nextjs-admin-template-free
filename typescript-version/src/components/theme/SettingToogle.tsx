@@ -43,8 +43,8 @@ export default function SettingToogle({ open, setOpen }: Props) {
   function openAnimation() {
     gsap.to(settingRef.current, {
       right: open ? '400px' : '0',
-      duration: 0.2,
-      ease: 'power2.inOut'
+      duration: 0.225,
+      // ease: 'power2.inOut'
     })
   }
   useEffect(() => {

@@ -25,9 +25,9 @@ const CardTwitter = () => {
           </div>
           <div className='flex items-center gap-1.5'>
             <i className='ri-thumb-up-fill text-xl text-white' />
-            <Typography variant='body2' className='text-white'>
+            {/* <Typography variant='body2' className='text-white'>
               1.6k
-            </Typography>
+            </Typography> */}
             <i className='ri-share-line text-xl text-white' />
             <Typography variant='body2' className='text-white'>
               98
