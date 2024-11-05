@@ -20,7 +20,6 @@ type ColorEntry = {
 export default function ThemeConfig({ open, setOpen }: Props) {
   const theme = useTheme();
   const { updateSettings, isSettingsChanged, resetSettings } = settingStore()
-  console.log(isSettingsChanged())
   let colorsList: ColorEntry[] = []
   for (let key in colors) {
     if (key !== 'common') {

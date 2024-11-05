@@ -6,6 +6,8 @@ import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 
 import ThemeProvider from '@components/theme'
 
+import WalletConfig from '@components/wallet'
+
 // Component Imports
 import UpgradeToProButton from '@components/upgrade-to-pro-button'
 
@@ -27,7 +29,9 @@ const Providers = (props: Props) => {
   return (
     // <VerticalNavProvider>
     <ThemeProvider direction={direction}>
-      {children}
+      <WalletConfig>
+        {children}
+      </WalletConfig>
       <UpgradeToProButton />
     </ThemeProvider>
     // </VerticalNavProvider>

@@ -1,5 +1,5 @@
 // Next Imports
-import Link from 'next/link'
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 // MUI Imports
 import IconButton from '@mui/material/IconButton'
@@ -35,6 +35,7 @@ const NavbarContent = () => {
             src={`https://img.shields.io/github/stars/themeselection/${process.env.NEXT_PUBLIC_REPO_NAME}`}
           />
         </Link> */}
+        <ConnectButton />
         <ModeDropdown />
         <IconButton className='text-textPrimary'>
           <i className='ri-notification-2-line' />
