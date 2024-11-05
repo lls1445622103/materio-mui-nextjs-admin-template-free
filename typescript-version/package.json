@@ -23,6 +23,7 @@
     "@mui/material-nextjs": "^5.15.11",
     "apexcharts": "^3.49.1",
     "classnames": "^2.5.1",
+    "gsap": "^3.12.5",
     "immer": "^10.1.1",
     "js-cookie": "^3.0.5",
     "next": "^14.2.3",

@@ -20,6 +20,7 @@ import './theme.module.scss'
 import type { ChildrenType, Direction } from '@core/types'
 // Component Imports
 import ModeChanger from './ModeChanger'
+import SettingToogle from './SettingToogle'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
@@ -99,6 +100,8 @@ const ThemeProvider = (props: Props) => {
           <CssBaseline />
           {children}
           <ThemeConfigDiv open={open} setOpen={setOpen} />
+          <SettingToogle open={open} setOpen={setOpen} />
+
         </>
       </CssVarsProvider>
     </AppRouterCacheProvider>

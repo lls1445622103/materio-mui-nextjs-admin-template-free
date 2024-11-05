@@ -1,12 +1,12 @@
 
 import React from 'react'
 import { Drawer, Typography, Chip, Divider, Grid, Badge } from '@mui/material'
-import style from './theme.module.scss'
 import CachedIcon from '@mui/icons-material/Cached';
 import CloseIcon from '@mui/icons-material/Close';
 import * as  colors from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
 import settingStore from '@/store/settingStore'
+import style from './theme.module.scss'
 type Props = {
   open: boolean
   setOpen: (open: boolean) => void
