@@ -86,7 +86,7 @@ const ThemeProvider = (props: Props) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.mode, settings.primaryColor])
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <AppRouterCacheProvider options={{ prepend: true }}>
