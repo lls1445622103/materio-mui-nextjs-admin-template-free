@@ -66,8 +66,11 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           icon={<i className='ri-home-smile-line' />}
           suffix={<Chip label='5' size='small' color='error' />}
         >
-          <MenuItem href={`/crm`} target='_blank'>
+          <MenuItem href={`/crm`} >
             CRM
+          </MenuItem>
+          <MenuItem href={`/vote`} >
+            vote
           </MenuItem>
           <MenuItem href='/'>Analytics</MenuItem>
         </SubMenu>
