@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import {
   useAccount,
@@ -10,7 +10,18 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt
 } from 'wagmi'
-import { Box, Button, Card, CardContent, Typography, List, ListItem } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  List,
+  ListItem,
+  Snackbar,
+  Alert,
+  CircularProgress
+} from '@mui/material'
 import HowToVoteIcon from '@mui/icons-material/HowToVote'
 
 // 合约地址类型声明
@@ -19,32 +30,48 @@ const CONTRACT_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9' as `0x${st
 // 合约 ABI
 const CONTRACT_ABI = [
   {
-    "inputs": [],
-    "name": "getAllVotesOfCandiates",
-    "outputs": [{ "components": [{ "name": "name", "type": "string" }, { "name": "voteCount", "type": "uint256" }], "name": "", "type": "tuple[]" }],
-    "stateMutability": "view",
-    "type": "function"
+    inputs: [],
+    name: 'getAllVotesOfCandiates',
+    outputs: [
+      {
+        components: [
+          { name: 'name', type: 'string' },
+          { name: 'voteCount', type: 'uint256' }
+        ],
+        name: '',
+        type: 'tuple[]'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
   },
   {
-    "inputs": [{ "name": "_candidateIndex", "type": "uint256" }],
-    "name": "vote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    inputs: [{ name: '_candidateIndex', type: 'uint256' }],
+    name: 'vote',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
   },
   {
-    "inputs": [],
-    "name": "getVotingStatus",
-    "outputs": [{ "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
+    inputs: [],
+    name: 'getVotingStatus',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function'
   },
   {
-    "inputs": [],
-    "name": "getRemainingTime",
-    "outputs": [{ "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
+    inputs: [],
+    name: 'getRemainingTime',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [{ name: '', type: 'address' }],
+    name: 'voters',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function'
   }
 ] as const
 
@@ -54,50 +81,50 @@ interface Candidate {
 }
 
 export default function Page() {
-  const [selectedCandidate, setSelectedCandidate] = useState<number | null>(null)
+  // const [selectedCandidate, setSelectedCandidate] = useState<number | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const { address, isConnecting } = useAccount()
-  const { data: blockNumber } = useBlockNumber()
+
+  const { data: blockNumber, isError: blockNumberError } = useBlockNumber({
+    watch: true,
+    onError: error => {
+      console.error('获取区块号错误:', error)
+    }
+  })
 
   const { data: balance } = useBalance({
-    address,
+    address
   })
 
   // 读取候选人列表
   const { data: candidates } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
-    functionName: 'getAllVotesOfCandiates',
+    functionName: 'getAllVotesOfCandiates'
   })
 
   // 读取投票状态
   const { data: votingStatus } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
-    functionName: 'getVotingStatus',
+    functionName: 'getVotingStatus'
   })
 
   // 读取剩余时间
   const { data: remainingTime } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
-    functionName: 'getRemainingTime',
+    functionName: 'getRemainingTime'
   })
 
   // 执行投票
-  const {
-    data: hash,
-    error,
-    isPending,
-    writeContract
-  } = useWriteContract()
+  const { data: hash, error, isPending, writeContract } = useWriteContract()
 
   // 等待交易确认
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed
-  } = useWaitForTransactionReceipt({
-    hash,
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash
   })
 
   // 检查是否已投票
@@ -106,91 +133,123 @@ export default function Page() {
     abi: CONTRACT_ABI,
     functionName: 'voters',
     args: [address as `0x${string}`],
+    enabled: !!address
   })
 
-  const handleVote = async (candidateIndex: number) => {
+  // 添加状态来跟踪当前正在投票的候选人索引
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null)
+
+  // 添加错误提示关闭处理
+  const handleCloseError = () => {
+    setErrorMessage('')
+  }
+
+  // 添加交易成功后的处理
+  useEffect(() => {
+    if (isConfirmed) {
+      setIsLoading(false)
+
+      // 重新加载页面
+      window.location.reload()
+    }
+  }, [isConfirmed])
+
+  // 修改 handleVote 函数
+  const handleVote = (candidateIndex: number) => {
     if (!address) {
-      alert('请先连接钱包')
+      setErrorMessage('请先连接钱包')
       return
     }
 
     if (!votingStatus) {
-      alert('投票已结束')
+      setErrorMessage('投票已结束')
       return
     }
 
     if (hasVoted) {
-      alert('您已经投过票了')
+      setErrorMessage('您已经投过票了')
       return
     }
+
+    // 设置当前正在投票的候选人索引
+    setLoadingIndex(candidateIndex)
 
     try {
       writeContract({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
         functionName: 'vote',
-        args: [BigInt(candidateIndex)],
+        args: [BigInt(candidateIndex)]
       })
-    } catch (error: any) {
-      if (error.message.includes("You have already voted")) {
-        alert('您已经投过票了')
-      } else if (error.message.includes("Voting has ended")) {
-        alert('投票已结束')
-      } else {
-        alert('投票失败: ' + error.message)
-      }
-      console.error('投票错误:', error)
+    } catch (err) {
+      setLoadingIndex(null)
+      // setIsLoading(false)
+      // setErrorMessage(`投票失败: ${err?.message || '未知错误'}`)
     }
   }
 
+  useEffect(() => {
+    console.log('votingStatus', votingStatus)
+  }, [votingStatus])
+
+  // 修改 useEffect
+  useEffect(() => {
+    if (isConfirmed || error) {
+      setLoadingIndex(null)
+    }
+
+    if (isConfirmed) {
+      window.location.reload()
+    }
+
+    if (error) {
+      setErrorMessage(`交易失败: ${error?.message || '未知错误'}`)
+    }
+  }, [isConfirmed, error])
+
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        当前区块：{blockNumber ?? '加载中...'}
+      <Typography variant='body1' sx={{ mb: 2 }}>
+        当前区块：
+        {blockNumberError ? '获取失败' : blockNumber ? blockNumber.toString() : '加载中...'}
       </Typography>
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        钱包地址：{isConnecting ? '连接中...' : (address || '未连接钱包')}
+      <Typography variant='body1' sx={{ mb: 2 }}>
+        钱包地址：{isConnecting ? '连接中...' : address || '未连接钱包'}
       </Typography>
-      <Typography variant="body1" sx={{ mb: 2 }}>
+      <Typography variant='body1' sx={{ mb: 2 }}>
         当前余额：{balance ? `${balance.formatted} ${balance.symbol}` : '0 ETH'}
       </Typography>
 
       <Card sx={{ mt: 4 }}>
         <CardContent>
-          <Typography variant="h5" component="div" sx={{ mb: 2 }}>
+          <Typography variant='h5' component='div' sx={{ mb: 2 }}>
             <HowToVoteIcon sx={{ mr: 1 }} />
             投票系统
           </Typography>
 
-          <Typography variant="body1" sx={{ mb: 2 }}>
+          <Typography variant='body1' sx={{ mb: 2 }}>
             投票状态：{votingStatus ? '进行中' : '已结束'}
           </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
+          <Typography variant='body1' sx={{ mb: 2 }}>
             剩余时间：{remainingTime ? `${Math.floor(Number(remainingTime) / 60)} 分钟` : '0 分钟'}
           </Typography>
 
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              错误: {error.message}
-            </Typography>
-          )}
-
           {hash && (
-            <Typography sx={{ mb: 2 }}>
+            <Alert severity='info' sx={{ mb: 2 }}>
               交易哈希: {hash}
-            </Typography>
+            </Alert>
           )}
 
           {isConfirming && (
-            <Typography sx={{ mb: 2 }}>
+            <Alert severity='info' sx={{ mb: 2 }}>
               等待确认中...
-            </Typography>
+            </Alert>
           )}
 
           {isConfirmed && (
-            <Typography color="success.main" sx={{ mb: 2 }}>
+            <Alert severity='success' sx={{ mb: 2 }}>
               交易已确认
-            </Typography>
+            </Alert>
           )}
 
           <List>
@@ -208,23 +267,40 @@ export default function Page() {
                 <Typography>
                   {candidate.name} - 得票数: {candidate.voteCount.toString()}
                 </Typography>
-                <Button
-                  variant="contained"
-                  onClick={() => handleVote(index)}
-                  disabled={isPending || isConfirming || hasVoted}
-                  sx={{ ml: 2 }}
-                >
-                  {hasVoted ? '已投票' :
-                    isPending ? '确认中...' :
-                      isConfirming ? '交易确认中...' :
-                        '投票'}
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  {loadingIndex === index && (
+                    <CircularProgress size={24} sx={{ mr: 1 }} />
+                  )}
+                  <Button
+                    variant='contained'
+                    onClick={() => handleVote(index)}
+                    disabled={!!(isPending || isConfirming || hasVoted || loadingIndex !== null)}
+                    sx={{ ml: 2 }}
+                  >
+                    {hasVoted ? '已投票' :
+                     loadingIndex === index ? '投票中...' :
+                     isPending ? '确认中...' :
+                     isConfirming ? '交易确认中...' :
+                     '投票'}
+                  </Button>
+                </Box>
               </ListItem>
             ))}
           </List>
         </CardContent>
       </Card>
+
+      {/* 添加错误提示组件 */}
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseError} severity='error' sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
-
