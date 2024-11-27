@@ -11,6 +11,6 @@
     }
   ],
   "rules": {
-    "liberty/use-logical-spec": "always"
+    "liberty/use-logical-spec": "null"
   }
 }
