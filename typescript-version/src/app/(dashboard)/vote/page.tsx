@@ -158,16 +158,19 @@ export default function Page() {
   const handleVote = (candidateIndex: number) => {
     if (!address) {
       setErrorMessage('请先连接钱包')
+
       return
     }
 
     if (!votingStatus) {
       setErrorMessage('投票已结束')
+
       return
     }
 
     if (hasVoted) {
       setErrorMessage('您已经投过票了')
+
       return
     }
 
@@ -183,6 +186,7 @@ export default function Page() {
       })
     } catch (err) {
       setLoadingIndex(null)
+
       // setIsLoading(false)
       // setErrorMessage(`投票失败: ${err?.message || '未知错误'}`)
     }
@@ -278,10 +282,10 @@ export default function Page() {
                     sx={{ ml: 2 }}
                   >
                     {hasVoted ? '已投票' :
-                     loadingIndex === index ? '投票中...' :
-                     isPending ? '确认中...' :
-                     isConfirming ? '交易确认中...' :
-                     '投票'}
+                      loadingIndex === index ? '投票中...' :
+                        isPending ? '确认中...' :
+                          isConfirming ? '交易确认中...' :
+                            '投票'}
                   </Button>
                 </Box>
               </ListItem>
