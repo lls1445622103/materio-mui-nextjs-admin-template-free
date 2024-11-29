@@ -6,6 +6,8 @@ import { useTheme } from '@mui/material/styles'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // Type Imports
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
@@ -20,6 +22,8 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+
+// Icon Imports
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -73,6 +77,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             vote
           </MenuItem>
           <MenuItem href='/'>Analytics</MenuItem>
+          <MenuItem href='/ipfs'>
+            IPFS存储
+          </MenuItem>
         </SubMenu>
         {/* <SubMenu
           label='Front Pages'
