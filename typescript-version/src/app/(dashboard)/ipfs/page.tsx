@@ -2,7 +2,7 @@
  * @Author: lixiaoming xiaoming.li@cy-tech.net
  * @Date: 2024-11-29 10:15:34
  * @LastEditors: lixiaoming xiaoming.li@cy-tech.net
- * @LastEditTime: 2024-11-29 16:35:27
+ * @LastEditTime: 2024-11-29 16:54:51
  * @FilePath: /typescript-version/src/app/(dashboard)/ipfs/page.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -164,19 +164,52 @@ export default function IPFSPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (fileName && ipfsHash) {
-      try {
-        await writeContract({
-          address: CONTRACT_ADDRESS,
-          abi: IPFSHashStorageABI,
-          functionName: 'upload',
-          args: [fileName, ipfsHash]
-        })
-      } catch (error) {
-        console.error('存储错误:', error)
-        setSnackbarMessage('存储操作失败')
+    const fileName = 'test222'
+    const ipfsHash = 'QmeaKXvbjjnttzu4ttAzjDQ2wHR97uCX84LyyAyLMtLagm'
+
+    try {
+      // 先检查文件是否已存在
+      const isStored = await readContract({
+        address: CONTRACT_ADDRESS,
+        abi: IPFSHashStorageABI,
+        functionName: 'isFileStored',
+        args: [fileName]
+      })
+
+      if (isStored) {
+        setSnackbarMessage('文件名已存在，请使用其他文件名')
         setOpenSnackbar(true)
+
+        return
       }
+
+      // 如果文件不存在，则进行存储
+      await writeContract({
+        address: CONTRACT_ADDRESS,
+        abi: IPFSHashStorageABI,
+        functionName: 'upload',
+        args: [fileName, ipfsHash]
+      })
+
+    } catch (error: any) {
+      console.error('存储错误:', error)
+
+      // 解析错误信息
+      let errorMessage = '存储操作失败'
+
+      if (error.message.includes('File already exists')) {
+        errorMessage = '文件名已存在，请使用其他文件名'
+      }
+
+
+      // 打印完整的错误信息以便调试
+      console.log('完整错误信息:', {
+        message: error.message,
+        cause: error.cause,
+        stack: error.stack
+      })
+      setSnackbarMessage(errorMessage)
+      setOpenSnackbar(true)
     }
   }
 
@@ -256,9 +289,8 @@ export default function IPFSPage() {
               value={ipfsHash}
               onChange={(e) => setIpfsHash(e.target.value)}
               variant="outlined"
-              disabled={true}
             />
-            <Button
+            {/* <Button
               type="submit"
               variant="contained"
               color="primary"
@@ -266,6 +298,16 @@ export default function IPFSPage() {
               disabled={!fileName || !ipfsHash || writeLoading || txLoading || uploading}
             >
               {writeLoading || txLoading ? '处理中...' : '存储哈希'}
+            </Button> */}
+            <Button
+              onClick={handleSubmit}
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+
+            >
+              存储
             </Button>
           </Box>
 
