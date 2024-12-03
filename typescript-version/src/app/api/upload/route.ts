@@ -7,12 +7,11 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import { NextResponse } from 'next/server'
-
-import PinataClient from '@pinata/sdk'
+import axios from 'axios'
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.PINATA_API_KEY || !process.env.PINATA_SECRET_KEY) {
+    if (!process.env.NEXT_PUBLIC_PINATA_API_KEY || !process.env.NEXT_PUBLIC_PINATA_SECRET_KEY) {
       console.error('Pinata API密钥未配置')
 
       return NextResponse.json({ error: 'Pinata API密钥未配置' }, { status: 500 })
@@ -31,37 +30,25 @@ export async function POST(request: Request) {
       fileType: file.type
     })
 
-    const pinata = new PinataClient(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY)
+    // 创建新的 FormData
+    const pinataFormData = new FormData()
+    pinataFormData.append('file', file)
 
-    try {
-      await pinata.testAuthentication()
-      console.log('Pinata认证成功')
-    } catch (authError) {
-      console.error('Pinata认证失败:', authError)
-
-      return NextResponse.json({ error: 'Pinata认证失败' }, { status: 500 })
-    }
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    console.log('开始上传到IPFS...')
-
-    const result = await pinata.pinFileToIPFS(buffer, {
-      pinataMetadata: {
-        name: file.name
+    const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', pinataFormData, {
+      headers: {
+        'pinata_api_key': process.env.NEXT_PUBLIC_PINATA_API_KEY,
+        'pinata_secret_api_key': process.env.NEXT_PUBLIC_PINATA_SECRET_KEY,
       },
-      pinataOptions: {
-        cidVersion: 0
-      }
+      maxBodyLength: Infinity,
     })
 
-    console.log('IPFS上传成功:', result)
+    console.log('IPFS上传成功:', response.data)
 
-    return NextResponse.json({ ipfsHash: result.IpfsHash })
-  } catch (error) {
+    return NextResponse.json({ ipfsHash: response.data.IpfsHash })
+  } catch (error: any) {
     console.error('Upload error details:', {
       message: error.message,
+      response: error.response?.data,
       stack: error.stack,
       name: error.name
     })
@@ -69,7 +56,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: '上传失败',
-        details: error.message
+        details: error.response?.data?.error || error.message
       },
       { status: 500 }
     )

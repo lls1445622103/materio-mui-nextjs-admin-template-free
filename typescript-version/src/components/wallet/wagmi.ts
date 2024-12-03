@@ -42,8 +42,9 @@ if (!walletConnectProjectId) {
     "WalletConnect project ID is not defined. Please check your environment variables.",
   );
 }
+
 const hardhat = {
-  id: 31337, // Hardhat 本地链的链ID
+  id: 31337,
   name: "Hardhat Local",
   network: "hardhat",
   nativeCurrency: {
@@ -53,11 +54,34 @@ const hardhat = {
   },
   rpcUrls: {
     default: {
-      http: ["http://127.0.0.1:8545"], // 本地 Hardhat 节点的地址
+      http: ["http://127.0.0.1:8545"],
+    },
+    public: {
+      http: ["http://127.0.0.1:8545"],
+    }
+  },
+  blockExplorers: {
+    default: { name: "Hardhat Explorer", url: "http://127.0.0.1:8545" },
+  },
+  testnet: true,
+};
+
+const goChainTestnet = {
+  id: 60,  // GoChain mainnet ID is 60, testnet should be different
+  name: "GoChain Testnet",
+  network: "gochain-testnet",
+  nativeCurrency: {
+    name: "GoChain",
+    symbol: "GO",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://testnet-rpc.gochain.io"],
     },
   },
   blockExplorers: {
-    default: { name: "Hardhat Explorer", url: "http://127.0.0.1:8545" }, // 可选
+    default: { name: "GoChain Explorer", url: "https://testnet-explorer.gochain.io" },
   },
   testnet: true,
 };
@@ -87,6 +111,7 @@ const connectors = connectorsForWallets(
 // const customLineaTestnet = { ...lineaTestnet, iconUrl: lineaTesnet_logo.src };
 
 const transports: Record<number, Transport> = {
+  [goChainTestnet.id]: http(),
   [hardhat.id]: http(),
   [mainnet.id]: http(),
   [sepolia.id]: http(),
@@ -105,9 +130,11 @@ const transports: Record<number, Transport> = {
   [bsc.id]: http(),
   [bscTestnet.id]: http(),
 };
+
 export const wagmiConfig = createConfig({
   chains: [
-    hardhat,
+    hardhat,  
+    goChainTestnet,  
     mainnet,
     sepolia,
     polygon,
@@ -116,16 +143,54 @@ export const wagmiConfig = createConfig({
     optimismGoerli,
     arbitrum,
     arbitrumGoerli,
-    // customLinea,
-    // customLineaTestnet,
-    // zkSync,
-    // customZkSyncSepoliaTestnet,
+    zkSync,
+    zkSyncSepoliaTestnet,
+    linea,
+    lineaTestnet,
     base,
     baseGoerli,
     bsc,
     bscTestnet,
   ],
-  connectors,
-  transports,
-  ssr: true,
+  transports: {
+    [hardhat.id]: http(),  
+    [goChainTestnet.id]: http(),  
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
+    [polygon.id]: http(),
+    [polygonMumbai.id]: http(),
+    [optimism.id]: http(),
+    [optimismGoerli.id]: http(),
+    [arbitrum.id]: http(),
+    [arbitrumGoerli.id]: http(),
+    [zkSync.id]: http(),
+    [zkSyncSepoliaTestnet.id]: http(),
+    [linea.id]: http(),
+    [lineaTestnet.id]: http(),
+    [base.id]: http(),
+    [baseGoerli.id]: http(),
+    [bsc.id]: http(),
+    [bscTestnet.id]: http(),
+  },
+  connectors: connectorsForWallets(
+    [
+      {
+        groupName: "Recommended",
+        wallets: [
+          metaMaskWallet,
+          rabbyWallet,
+          walletConnectWallet,
+          coinbaseWallet,
+          safeWallet,
+          ledgerWallet,
+          argentWallet,
+          rainbowWallet,
+        ],
+      },
+    ],
+    {
+      appName: "IPFS Storage dApp",
+      projectId: walletConnectProjectId,
+    },
+  ),
 });

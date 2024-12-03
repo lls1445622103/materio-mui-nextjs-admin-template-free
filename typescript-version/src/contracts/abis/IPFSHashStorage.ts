@@ -24,24 +24,6 @@ export const IPFSHashStorageABI = [
         internalType: 'string',
         name: 'fileName',
         type: 'string'
-      },
-      {
-        internalType: 'string',
-        name: 'ipfsHash',
-        type: 'string'
-      }
-    ],
-    name: 'upload',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
-    inputs: [
-      {
-        internalType: 'string',
-        name: 'fileName',
-        type: 'string'
       }
     ],
     name: 'isFileStored',
@@ -53,6 +35,24 @@ export const IPFSHashStorageABI = [
       }
     ],
     stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string',
+        name: 'fileName',
+        type: 'string'
+      },
+      {
+        internalType: 'string',
+        name: 'ipfsHash',
+        type: 'string'
+      }
+    ],
+    name: 'upload',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function'
   }
 ] as const

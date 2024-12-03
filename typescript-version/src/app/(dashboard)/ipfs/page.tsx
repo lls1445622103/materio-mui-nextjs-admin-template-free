@@ -10,7 +10,9 @@
 
 import { useState, useEffect } from 'react'
 
-import { useReadContract, useTransaction, useWriteContract } from 'wagmi'
+import { useReadContract, useTransaction, useWriteContract, useAccount, useChainId } from 'wagmi'
+import { readContract, writeContract as wagmiWriteContract } from 'wagmi/actions'
+import { wagmiConfig } from '@/components/wallet/wagmi'
 import {
   Card,
   CardContent,
@@ -34,6 +36,9 @@ import { IPFSHashStorageABI } from '@/contracts/abis/IPFSHashStorage'
 
 const CONTRACT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
 
+// 添加 GoChain Testnet chainId
+const GOCHAIN_TESTNET_CHAIN_ID = 31337
+
 // 自定义上传区域样式
 const UploadBox = styled(Box)(({ theme }) => ({
   border: `2px dashed ${theme.palette.primary.main}`,
@@ -46,36 +51,52 @@ const UploadBox = styled(Box)(({ theme }) => ({
   },
 }))
 
-export default function IPFSPage() {
-  const [fileName, setFileName] = useState('')
-  const [ipfsHash, setIpfsHash] = useState('')
+const IPFSPage = () => {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const [file, setFile] = useState<File | null>(null)
+  const [ipfsHash, setIpfsHash] = useState('')
+  const [fileName, setFileName] = useState('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploading, setUploading] = useState(false)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
+  const chainId = useChainId()
+
+  // 添加钱包连接状态检查
+  const { address, isConnected } = useAccount()
 
   // 使用writeContract hook
-  const { writeContract, isLoading: writeLoading, data: writeData, error: writeError } = useWriteContract()
-
-  // 读取合约数据
-  const {
-    data: storedHash,
-    isError: readError,
-    isLoading: readLoading,
-    refetch
-  } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: IPFSHashStorageABI,
-    functionName: 'getIPFSHash',
-    args: fileName ? [fileName] : undefined,
-  })
+  const { writeContract, writeContractAsync, isPending: writeLoading, data: writeData, error: writeError } = useWriteContract()
 
   // 监听交易状态
   const { isLoading: txLoading, isSuccess: txSuccess } = useTransaction({
     hash: writeData,
   })
+
+  // 监控钱包连接状态
+  useEffect(() => {
+    console.log('Wallet status:', { address, isConnected, chainId })
+
+    if (!isConnected) {
+      setSnackbarMessage('请先连接钱包')
+      setOpenSnackbar(true)
+    }
+  }, [isConnected, address, chainId])
+
+  // 监控合约写入错误
+  useEffect(() => {
+    if (writeError) {
+      console.error('Contract write error:', writeError)
+      setSnackbarMessage('写入合约数据失败')
+      setOpenSnackbar(true)
+    }
+  }, [writeError])
 
   // 处理文件选择
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +107,6 @@ export default function IPFSPage() {
       if (!selectedFile.type.startsWith('image/')) {
         setSnackbarMessage('请选择图片文件')
         setOpenSnackbar(true)
-
         return
       }
 
@@ -95,7 +115,6 @@ export default function IPFSPage() {
 
       // 创建预览URL
       const url = URL.createObjectURL(selectedFile)
-
       setPreviewUrl(url)
 
       // 上传到IPFS
@@ -110,7 +129,6 @@ export default function IPFSPage() {
       setUploadProgress(0)
 
       const formData = new FormData()
-
       formData.append('file', file)
 
       const response = await fetch('/api/upload', {
@@ -123,7 +141,6 @@ export default function IPFSPage() {
       }
 
       const data = await response.json()
-
       setIpfsHash(data.ipfsHash)
       setSnackbarMessage('图片上传成功！')
       setOpenSnackbar(true)
@@ -157,58 +174,84 @@ export default function IPFSPage() {
       setSnackbarMessage('文件哈希存储成功！')
       setOpenSnackbar(true)
       handleFileDelete()
-      refetch()
     }
-  }, [txSuccess, refetch])
+  }, [txSuccess])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const fileName = 'test222'
-    const ipfsHash = 'QmeaKXvbjjnttzu4ttAzjDQ2wHR97uCX84LyyAyLMtLagm'
+    if (!isConnected) {
+      setSnackbarMessage('请先连接钱包')
+      setOpenSnackbar(true)
+      return
+    }
+
+    if (!fileName || !ipfsHash) {
+      setSnackbarMessage('请先上传文件')
+      setOpenSnackbar(true)
+      return
+    }
+
+    if (chainId !== GOCHAIN_TESTNET_CHAIN_ID) {
+      setSnackbarMessage('请切换到 GoChain Testnet 网络')
+      setOpenSnackbar(true)
+      return
+    }
 
     try {
-      // 先检查文件是否已存在
-      const isStored = await readContract({
-        address: CONTRACT_ADDRESS,
-        abi: IPFSHashStorageABI,
-        functionName: 'isFileStored',
-        args: [fileName]
-      })
-
-      if (isStored) {
-        setSnackbarMessage('文件名已存在，请使用其他文件名')
-        setOpenSnackbar(true)
-
-        return
-      }
+      console.log('开始存储文件:', fileName, ipfsHash)
 
       // 如果文件不存在，则进行存储
-      await writeContract({
-        address: CONTRACT_ADDRESS,
+      const res = await writeContractAsync({
+        address: CONTRACT_ADDRESS as `0x${string}`,  // 确保地址格式正确
         abi: IPFSHashStorageABI,
         functionName: 'upload',
         args: [fileName, ipfsHash]
       })
 
+      console.log('交易hash:', res)
+      setSnackbarMessage('文件存储交易已发送！')
+      setOpenSnackbar(true)
     } catch (error: any) {
       console.error('存储错误:', error)
 
-      // 解析错误信息
       let errorMessage = '存储操作失败'
-
-      if (error.message.includes('File already exists')) {
-        errorMessage = '文件名已存在，请使用其他文件名'
+      if (error.message.includes('user rejected')) {
+        errorMessage = '用户取消了交易'
       }
 
-
-      // 打印完整的错误信息以便调试
-      console.log('完整错误信息:', {
-        message: error.message,
-        cause: error.cause,
-        stack: error.stack
-      })
       setSnackbarMessage(errorMessage)
+      setOpenSnackbar(true)
+    }
+  }
+
+  const handleQueryHash = async () => {
+    if (!fileName) {
+      setSnackbarMessage('请先选择文件')
+      setOpenSnackbar(true)
+      return
+    }
+
+    if (chainId !== GOCHAIN_TESTNET_CHAIN_ID) {
+      setSnackbarMessage('请切换到 GoChain Testnet 网络')
+      setOpenSnackbar(true)
+      return
+    }
+
+    try {
+      const storedHash = await readContract(wagmiConfig, {
+        chainId: GOCHAIN_TESTNET_CHAIN_ID,
+        address: CONTRACT_ADDRESS,
+        abi: IPFSHashStorageABI,
+        functionName: 'getIPFSHash',
+        args: [fileName]
+      })
+
+      setSnackbarMessage(`已存储的图片哈希值：${storedHash}`)
+      setOpenSnackbar(true)
+    } catch (error: any) {
+      console.error('查询错误:', error)
+      setSnackbarMessage('查询哈希值失败')
       setOpenSnackbar(true)
     }
   }
@@ -224,6 +267,18 @@ export default function IPFSPage() {
           <Typography variant="h5" component="h2" gutterBottom>
             IPFS图片存储
           </Typography>
+
+          {/* 添加钱包连接状态显示 */}
+          <Box sx={{ mb: 2 }}>
+            <Typography color={isConnected ? 'success.main' : 'error.main'}>
+              {isConnected ? '钱包已连接' : '请先连接钱包'}
+            </Typography>
+            {isConnected && (
+              <Typography variant="body2" color="textSecondary">
+                Chain ID: {chainId}
+              </Typography>
+            )}
+          </Box>
 
           {/* 图片上传区域 */}
           <Box sx={{ mb: 4 }}>
@@ -290,15 +345,6 @@ export default function IPFSPage() {
               onChange={(e) => setIpfsHash(e.target.value)}
               variant="outlined"
             />
-            {/* <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={!fileName || !ipfsHash || writeLoading || txLoading || uploading}
-            >
-              {writeLoading || txLoading ? '处理中...' : '存储哈希'}
-            </Button> */}
             <Button
               onClick={handleSubmit}
               type="submit"
@@ -311,28 +357,23 @@ export default function IPFSPage() {
             </Button>
           </Box>
 
-          {readLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-              <CircularProgress />
-            </Box>
-          ) : readError ? (
-            <Alert severity="error" sx={{ my: 2 }}>
-              读取合约数据失败
-            </Alert>
-          ) : storedHash ? (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                已存储的图片哈希值:
-              </Typography>
-              <Typography variant="body1">
-                {storedHash as string}
-              </Typography>
-            </Box>
-          ) : fileName && (
-            <Typography color="text.secondary" sx={{ mt: 3 }}>
-              该文件暂未存储哈希值
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              已存储的图片哈希值：
             </Typography>
-          )}
+            <Typography variant="body1">
+              {fileName && (
+                <Button
+                  onClick={handleQueryHash}
+                  variant="outlined"
+                  color="primary"
+                  disabled={!isConnected}
+                >
+                  查询哈希值
+                </Button>
+              )}
+            </Typography>
+          </Box>
 
           {writeError && (
             <Alert severity="error" sx={{ mt: 2 }}>
@@ -351,3 +392,5 @@ export default function IPFSPage() {
     </Box>
   )
 }
+
+export default IPFSPage
