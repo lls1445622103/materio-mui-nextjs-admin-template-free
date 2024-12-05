@@ -34,7 +34,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 import { IPFSHashStorageABI } from '@/contracts/abis/IPFSHashStorage'
 
-const CONTRACT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+// const CONTRACT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+const CONTRACT_ADDRESS = '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0'
 
 // 添加 GoChain Testnet chainId
 const GOCHAIN_TESTNET_CHAIN_ID = 31337
