@@ -11,7 +11,8 @@
 import { useState, useEffect } from 'react'
 
 import { useReadContract, useTransaction, useWriteContract, useAccount, useChainId } from 'wagmi'
-import { readContract, writeContract as wagmiWriteContract } from 'wagmi/actions'
+import { readContract, writeContract as wagmiWriteContract } from '@wagmi/core'
+import { getPublicClient } from 'wagmi/actions'
 import { wagmiConfig } from '@/components/wallet/wagmi'
 import {
   Card,
@@ -34,8 +35,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 import { IPFSHashStorageABI } from '@/contracts/abis/IPFSHashStorage'
 
-// const CONTRACT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
-const CONTRACT_ADDRESS = '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0'
+const CONTRACT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+// const CONTRACT_ADDRESS = '0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0'
 
 // 添加 GoChain Testnet chainId
 const GOCHAIN_TESTNET_CHAIN_ID = 31337
@@ -226,9 +227,18 @@ const IPFSPage = () => {
     }
   }
 
-  const handleQueryHash = async () => {
+  const [queryFileName, setQueryFileName] = useState('')
+
+  const { data: storedHash, isError, isLoading } = useReadContract({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: IPFSHashStorageABI,
+    functionName: 'getIPFSHash',
+    args: ['']  // 初始为空字符串
+  })
+
+  const handleQueryHash = async (fileName: string) => {
     if (!fileName) {
-      setSnackbarMessage('请先选择文件')
+      setSnackbarMessage('请先输入文件名')
       setOpenSnackbar(true)
       return
     }
@@ -240,19 +250,26 @@ const IPFSPage = () => {
     }
 
     try {
-      const storedHash = await readContract(wagmiConfig, {
-        chainId: GOCHAIN_TESTNET_CHAIN_ID,
-        address: CONTRACT_ADDRESS,
+      const result = await readContract(wagmiConfig, {
+        address: CONTRACT_ADDRESS as `0x${string}`,
         abi: IPFSHashStorageABI,
         functionName: 'getIPFSHash',
         args: [fileName]
       })
 
-      setSnackbarMessage(`已存储的图片哈希值：${storedHash}`)
+      console.log('查询结果:', result)
+
+      if (!result || result === '0x' || result === '') {
+        setSnackbarMessage(`未找到文件 "${fileName}" 的哈希值记录，请确认：\n1. 文件名是否正确\n2. 是否已经上传过该文件`)
+        setOpenSnackbar(true)
+        return
+      }
+
+      setSnackbarMessage(`文件 "${fileName}" 的IPFS哈希值：${result}`)
       setOpenSnackbar(true)
     } catch (error: any) {
       console.error('查询错误:', error)
-      setSnackbarMessage('查询哈希值失败')
+      setSnackbarMessage('查询失败，请确认合约地址和网络连接是否正确')
       setOpenSnackbar(true)
     }
   }
@@ -358,38 +375,42 @@ const IPFSPage = () => {
             </Button>
           </Box>
 
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              已存储的图片哈希值：
-            </Typography>
-            <Typography variant="body1">
-              {fileName && (
-                <Button
-                  onClick={handleQueryHash}
-                  variant="outlined"
-                  color="primary"
-                  disabled={!isConnected}
-                >
-                  查询哈希值
-                </Button>
-              )}
-            </Typography>
-          </Box>
+          {/* 新增查询区域 */}
+          <Card sx={{ mt: 4 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                查询IPFS哈希值
+              </Typography>
 
-          {writeError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              存储操作失败: {writeError.message}
-            </Alert>
-          )}
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <TextField
+                  fullWidth
+                  label="输入要查询的文件名"
+                  value={queryFileName}
+                  onChange={(e) => setQueryFileName(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                />
+                <Button
+                  onClick={() => handleQueryHash(queryFileName)}
+                  variant="contained"
+                  color="primary"
+                  disabled={!isConnected || !queryFileName}
+                >
+                  查询
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+            message={snackbarMessage}
+          />
         </CardContent>
       </Card>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-      />
     </Box>
   )
 }
