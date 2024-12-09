@@ -80,6 +80,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/ipfs'>
             IPFS存储
           </MenuItem>
+          <MenuItem href='/faucet'>
+            代币水龙头
+          </MenuItem>
         </SubMenu>
         {/* <SubMenu
           label='Front Pages'
